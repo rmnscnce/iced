@@ -158,16 +158,31 @@ pub fn font_system() -> &'static RwLock<FontSystem> {
     static FONT_SYSTEM: OnceCell<RwLock<FontSystem>> = OnceCell::new();
 
     FONT_SYSTEM.get_or_init(|| {
+        #[allow(unused_mut)]
+        let mut raw = cosmic_text::FontSystem::new_with_fonts([
+            cosmic_text::fontdb::Source::Binary(Arc::new(
+                include_bytes!("../fonts/Iced-Icons.ttf").as_slice(),
+            )),
+            #[cfg(all(target_arch = "wasm32", feature = "fira-sans"))]
+            cosmic_text::fontdb::Source::Binary(Arc::new(
+                include_bytes!("../fonts/FiraSans-Regular.ttf").as_slice(),
+            )),
+        ]);
+
+        // Load system fonts for Android
+        // https://github.com/pop-os/cosmic-text/issues/243#issue-2189977938
+        #[cfg(target_os = "android")]
+        {
+            raw.db_mut().load_fonts_dir("/system/fonts");
+            raw.db_mut().set_sans_serif_family("Roboto");
+            raw.db_mut().set_serif_family("Noto Serif");
+            raw.db_mut().set_monospace_family("Droid Sans Mono"); // Cutive Mono looks more printer-like
+            raw.db_mut().set_cursive_family("Dancing Script");
+            raw.db_mut().set_fantasy_family("Dancing Script");
+        }
+
         RwLock::new(FontSystem {
-            raw: cosmic_text::FontSystem::new_with_fonts([
-                cosmic_text::fontdb::Source::Binary(Arc::new(
-                    include_bytes!("../fonts/Iced-Icons.ttf").as_slice(),
-                )),
-                #[cfg(all(target_arch = "wasm32", feature = "fira-sans"))]
-                cosmic_text::fontdb::Source::Binary(Arc::new(
-                    include_bytes!("../fonts/FiraSans-Regular.ttf").as_slice(),
-                )),
-            ]),
+            raw,
             version: Version::default(),
         })
     })

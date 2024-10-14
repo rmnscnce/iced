@@ -42,6 +42,7 @@ use crate::core::text::editor::{Cursor, Editor as _};
 use crate::core::text::highlighter::{self, Highlighter};
 use crate::core::text::{self, LineHeight, Text, Wrapping};
 use crate::core::time::{Duration, Instant};
+use crate::core::touch;
 use crate::core::widget::operation;
 use crate::core::widget::{self, Widget};
 use crate::core::window;
@@ -672,6 +673,10 @@ where
                         mouse::click::Kind::Triple => Action::SelectLine,
                     };
 
+                    if !state.is_focused() {
+                        shell.publish(on_edit(Action::Focus));
+                    }
+
                     state.focus = Some(Focus::now());
                     state.last_click = Some(click);
                     state.drag_click = Some(click.kind());
@@ -720,6 +725,7 @@ where
                             Binding::Unfocus => {
                                 state.focus = None;
                                 state.drag_click = None;
+                                shell.publish(on_edit(Action::Blur));
                             }
                             Binding::Copy => {
                                 if let Some(selection) = content.selection() {
@@ -1187,6 +1193,37 @@ impl<Message> Update<Message> {
                     }))
                 }
                 _ => None,
+            },
+            Event::Touch(event) => match event {
+                touch::Event::FingerPressed { .. } => {
+                    if let Some(cursor_position) = cursor.position_in(bounds) {
+                        let cursor_position = cursor_position
+                            - Vector::new(padding.top, padding.left);
+
+                        let click = mouse::Click::new(
+                            cursor_position,
+                            mouse::Button::Left,
+                            state.last_click,
+                        );
+
+                        Some(Update::Click(click))
+                    } else if state.focus.is_some() {
+                        binding(Binding::Unfocus)
+                    } else {
+                        None
+                    }
+                }
+                touch::Event::FingerLifted { .. }
+                | touch::Event::FingerLost { .. } => Some(Update::Release),
+                touch::Event::FingerMoved { .. } => match state.drag_click {
+                    Some(mouse::click::Kind::Single) => {
+                        let cursor_position = cursor.position_in(bounds)?
+                            - Vector::new(padding.top, padding.left);
+
+                        Some(Update::Drag(cursor_position))
+                    }
+                    _ => None,
+                },
             },
             Event::Keyboard(keyboard::Event::KeyPressed {
                 key,

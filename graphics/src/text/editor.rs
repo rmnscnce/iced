@@ -416,6 +416,8 @@ impl editor::Editor for Editor {
                     cosmic_text::Action::Scroll { lines },
                 );
             }
+            // Do nothing, these are for user convenience only
+            Action::Focus | Action::Blur => {}
         }
 
         self.0 = Some(Arc::new(internal));
