@@ -1,5 +1,9 @@
+#[cfg(feature = "packed-shaders")]
+use core::str;
 use std::borrow::Cow;
 
+#[cfg(feature = "packed-shaders")]
+use include_zstd::include_zstd;
 use wgpu::util::DeviceExt;
 
 pub fn convert(
@@ -97,6 +101,16 @@ pub fn convert(
 
     let shader = device.create_shader_module(wgpu::ShaderModuleDescriptor {
         label: Some("iced_wgpu.offscreen.blit.shader"),
+        #[cfg(feature = "packed-shaders")]
+        source: wgpu::ShaderSource::Wgsl(Cow::Owned(
+            str::from_utf8(&Box::<[_]>::from(include_zstd!(
+                "src/shader/blit.wgsl",
+                19
+            )))
+            .unwrap()
+            .to_string(),
+        )),
+        #[cfg(not(feature = "packed-shaders"))]
         source: wgpu::ShaderSource::Wgsl(Cow::Borrowed(include_str!(
             "shader/blit.wgsl"
         ))),

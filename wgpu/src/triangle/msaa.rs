@@ -99,6 +99,15 @@ impl Blit {
         let shader =
             device.create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: Some("iced_wgpu triangle blit_shader"),
+                #[cfg(feature = "packed-shaders")]
+                source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(
+                    std::str::from_utf8(&Box::<[_]>::from(
+                        include_zstd::include_zstd!("src/shader/blit.wgsl", 19),
+                    ))
+                    .unwrap()
+                    .to_string(),
+                )),
+                #[cfg(not(feature = "packed-shaders"))]
                 source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(
                     include_str!("../shader/blit.wgsl"),
                 )),

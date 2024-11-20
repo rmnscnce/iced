@@ -72,6 +72,34 @@ impl Pipeline {
         let shader =
             device.create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: Some("iced_wgpu.quad.solid.shader"),
+                #[cfg(feature = "packed-shaders")]
+                source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(
+                    String::new()
+                        + std::str::from_utf8(&Box::<[_]>::from(
+                            include_zstd::include_zstd!(
+                                "src/shader/quad.wgsl",
+                                19
+                            ),
+                        ))
+                        .unwrap()
+                        + "\n"
+                        + std::str::from_utf8(&Box::<[_]>::from(
+                            include_zstd::include_zstd!(
+                                "src/shader/vertex.wgsl",
+                                19
+                            ),
+                        ))
+                        .unwrap()
+                        + "\n"
+                        + std::str::from_utf8(&Box::<[_]>::from(
+                            include_zstd::include_zstd!(
+                                "src/shader/quad/solid.wgsl",
+                                19
+                            ),
+                        ))
+                        .unwrap(),
+                )),
+                #[cfg(not(feature = "packed-shaders"))]
                 source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(
                     concat!(
                         include_str!("../shader/quad.wgsl"),

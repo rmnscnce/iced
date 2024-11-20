@@ -1,5 +1,7 @@
 pub(crate) mod cache;
 pub(crate) use cache::Cache;
+#[cfg(feature = "packed-shaders")]
+use include_zstd::include_zstd;
 
 mod atlas;
 
@@ -14,6 +16,8 @@ use crate::Buffer;
 
 use bytemuck::{Pod, Zeroable};
 
+#[cfg(feature = "packed-shaders")]
+use core::str;
 use std::mem;
 use std::sync::Arc;
 
@@ -113,6 +117,22 @@ impl Pipeline {
         let shader =
             device.create_shader_module(wgpu::ShaderModuleDescriptor {
                 label: Some("iced_wgpu image shader"),
+                #[cfg(feature = "packed-shaders")]
+                source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(
+                    String::new()
+                        + str::from_utf8(&Box::<[_]>::from(include_zstd!(
+                            "src/shader/vertex.wgsl",
+                            19
+                        )))
+                        .unwrap()
+                        + "\n"
+                        + str::from_utf8(&Box::<[_]>::from(include_zstd!(
+                            "src/shader/image.wgsl",
+                            19
+                        )))
+                        .unwrap(),
+                )),
+                #[cfg(not(feature = "packed-shaders"))]
                 source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Borrowed(
                     concat!(
                         include_str!("../shader/vertex.wgsl"),

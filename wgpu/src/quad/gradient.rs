@@ -85,6 +85,77 @@ impl Pipeline {
             let shader =
                 device.create_shader_module(wgpu::ShaderModuleDescriptor {
                     label: Some("iced_wgpu.quad.gradient.shader"),
+                    #[cfg(feature = "packed-shaders")]
+                    source: wgpu::ShaderSource::Wgsl(std::borrow::Cow::Owned(
+                        if color::GAMMA_CORRECTION {
+                            String::new()
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/quad.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/vertex.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/quad/gradient.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/color/oklab.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                        } else {
+                            String::new()
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/quad.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/vertex.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/quad/gradient.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                                + "\n"
+                                + std::str::from_utf8(&Box::<[_]>::from(
+                                    include_zstd::include_zstd!(
+                                        "src/shader/color/linear_rgb.wgsl",
+                                        19
+                                    ),
+                                ))
+                                .unwrap()
+                        },
+                    )),
+                    #[cfg(not(feature = "packed-shaders"))]
                     source: wgpu::ShaderSource::Wgsl(
                         std::borrow::Cow::Borrowed(
                             if color::GAMMA_CORRECTION {

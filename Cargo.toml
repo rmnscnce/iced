@@ -154,6 +154,7 @@ glyphon = { git = "https://github.com/hecrj/glyphon.git", rev = "09712a70df7431e
 guillotiere = "0.6"
 half = "2.2"
 image = { version = "0.24", default-features = false }
+include-zstd = { git = "https://github.com/rmnscnce/include-zstd.git", branch = "master", package = "include-zstd" }
 kamadak-exif = "0.5"
 kurbo = "0.10"
 log = "0.4"

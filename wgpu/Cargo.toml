@@ -24,6 +24,7 @@ svg = ["iced_graphics/svg", "resvg/text"]
 web-colors = ["iced_graphics/web-colors"]
 webgl = ["wgpu/webgl"]
 strict-assertions = []
+packed-shaders = []
 
 [dependencies]
 iced_graphics.workspace = true
@@ -34,6 +35,7 @@ futures.workspace = true
 glam.workspace = true
 glyphon.workspace = true
 guillotiere.workspace = true
+include-zstd.workspace = true
 log.workspace = true
 once_cell.workspace = true
 rustc-hash.workspace = true
